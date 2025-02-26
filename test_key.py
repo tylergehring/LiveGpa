@@ -68,7 +68,7 @@ class Tests():
 
 
 if __name__=="__main__":
-    test = Tests('19317~u8Y9MJnyFETvCekH2c6FT2vkyFGvWGBkaHLCrXnf9xXaryR7mTRhWyBAQhR2f392')
+    test = Tests('')
     print(f"key_test: {test.key_test(print_data=True)}")
     print(f"STUDENT NAME: {test.student.data.first_name} {test.student.data.last_name}")
     print(f"course_test: {test.course_test(print_data=False)}")
