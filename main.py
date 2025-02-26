@@ -3,12 +3,20 @@
 
 import json
 
-import student
+import classroom
 
 if __name__=="__main__":
     filename = "student_keys.json"
     with open(filename, 'r') as openfile:
-        data = json.load(openfile)
-    key = data[0]['apiKey']
-    tyler = student.Student(key)
-    print(tyler.data)
+        name_key_dict = json.load(openfile)
+
+    class_rm = classroom.Classroom(name_key_dict) #make this the dict instead of just keys for catching errors
+    for student in class_rm.students:
+        try:
+            print(student.data)
+        except:
+            pass
+    
+
+#TODO:
+#add errors to error cache. make test script exicutable on error cache to get more detail

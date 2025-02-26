@@ -1,5 +1,5 @@
 #Tyler Gehring 2025
-#Class to get and store student data
+#Purpose get and store student data
 
 import requests
 import datetime
@@ -12,7 +12,7 @@ class DotDict(dict):
 
 class Student():
     """Grabs data about a student from Canvas Rest Api"""
-    def __init__(self, apiKey):
+    def __init__(self, apiKey, grab_all=True):
         self.apiKey = apiKey
         self.url = "https://canvas.uidaho.edu/api/v1"
         self.headers = {'Authorization' : 'Bearer ' + self.apiKey}
@@ -29,33 +29,40 @@ class Student():
         self.month = None
         
         ### ---- Filling Data ----
-        self.get_date()
-        self.get_name_and_id()
-        self.get_courses()
-        self.get_grades()
-        self.calc_gpa()
+        if(grab_all):
+            func_err = {'get_date': 0, 'get_name_and_id':0, 'get_course':0, 'get_grades': 0, 'calc_gpa': 0}
+            try:
+                func_err['get_date'] =self.get_date()
+                func_err['get_name_and_id'] =self.get_name_and_id()
+                func_err['get_course'] =self.get_courses()
+                func_err['get_grades'] =self.get_grades()
+                func_err['calc_gpa'] =self.calc_gpa()
+            except Exception as e:
+                self.errors.append({'key' : self.apiKey, 'func_err' : func_err})
+                print("Cannot create student obj...")
+    
 
     def get_date(self):
+        """gets the current year and month and saves it to self.year and self.month. returns 1 if successful"""
         current_date = datetime.datetime.now()
         self.year = int(current_date.year)
         self.month = int(current_date.month)
+        return 1
         
     def get_name_and_id(self):
-        try:
-            rec = requests.get((f"{self.url}/users/self"), headers = self.headers) 
-            rec = rec.json()
-            rec = DotDict(rec)
-            self.data.first_name = rec.first_name
-            self.data.last_name = rec.last_name
-            self.data.id = rec.id
-        except Exception as e:
-            self.errors.append(e)
-            print("ERROR::Student:get_name_and_id... Probably a Key Issue")
-            raise(e)
+        """saves first_name, last_name, and id to self.data. returns 1 if successful"""
+        rec = requests.get((f"{self.url}/users/self"), headers = self.headers) 
+        rec = rec.json()
+        rec = DotDict(rec)
+        self.data.first_name = rec.first_name
+        self.data.last_name = rec.last_name
+        self.data.id = rec.id
+        return 1
             
     
     def get_courses(self):
-        rec = requests.get((f"{self.url}/courses/?per_page=30"), headers = self.headers) #request to student courses "?per_page=30" takes 30 results. the default is 10 due to the http pagination
+        """gets a list of current courses and adds them to self.data.courses. format is a dict of name, id, and grade. grade is not added here. returns 1 if successful"""
+        rec = requests.get((f"{self.url}/courses/?per_page=50"), headers = self.headers) #request to student courses "?per_page=50" takes 50 results. the default is 10 due to the http pagination
         rec = rec.json()
         for course in rec:
             try:
@@ -66,18 +73,20 @@ class Student():
                     self.data.courses.append({'name': course['name'], 'id': course['id'], 'grade' : None})
             except: # some entries wont be actual classes so we skip over them using a try/except block
                 pass
+        return 1
 
         
     def get_grades(self):
-        """grabs grades for every class and adds it to self.data"""
+        """grabs grades for every class and adds it to self.data. returns 1 if successful"""
         for course in self.data.courses:
             rec = requests.get((f"{self.url}/courses/{course['id']}/enrollments/?user_id={self.data.id}"), headers = self.headers) 
             rec = rec.json()
             course['grade'] = {'current_score': rec[0]['grades']['current_score'], 'current_grade': rec[0]['grades']['current_grade']}
+        return 1
 
 
     def calc_gpa(self):
-        """Calculates overall gpa, assumes all classes are three credits"""
+        """Calculates overall gpa, assumes all classes are three credits. returns 1 if successful"""
         assumed_credits = 3
         total_credits = 0
         total_score = 0
@@ -99,6 +108,7 @@ class Student():
             total_credits += 3
 
         self.data.gpa = (total_score/total_credits)
+        return 1
 
 
         
