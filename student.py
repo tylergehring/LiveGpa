@@ -38,7 +38,7 @@ class Student():
                 func_err['get_grades'] =self.get_grades()
                 func_err['calc_gpa'] =self.calc_gpa()
             except Exception as e:
-                self.errors.append({'key' : self.apiKey, 'func_err' : func_err})
+                self.errors.append({"data_error": {'key' : self.apiKey, 'func_err' : func_err, 'first_name': self.data.first_name, 'last_name': self.data.last_name}})
                 print("Cannot create student obj...")
     
 
@@ -54,9 +54,16 @@ class Student():
         rec = requests.get((f"{self.url}/users/self"), headers = self.headers) 
         rec = rec.json()
         rec = DotDict(rec)
-        self.data.first_name = rec.first_name
-        self.data.last_name = rec.last_name
-        self.data.id = rec.id
+
+        try:
+            if 'Expired access token.' in str(rec.errors):
+                    self.errors.append({'expired_apiKey_error': self.apiKey})
+                    print("Expired Token")
+                    return 0
+        except Exception as e:
+            self.data.first_name = rec.first_name
+            self.data.last_name = rec.last_name
+            self.data.id = rec.id
         return 1
             
     

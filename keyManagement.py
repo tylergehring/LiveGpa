@@ -17,11 +17,11 @@ class KeyManagement():
         with open(filename, 'r') as openfile:
             self.json_data = json.load(openfile)
     
-    def addKey(self):
+    def add_key(self, apiKey, pc_year):
         """saves student pc_year, first_name, last_name, key, and ID to self.file"""
 
-        self.pc_year = int(input("What is the students pc year?(int): "))
-        self.apiKey = (input("What is their Canvas API Key?: ")).strip()
+        self.pc_year = pc_year
+        self.apiKey = apiKey
 
         if (self.get_student_data(self.apiKey)): #returns 1 if successful
             token = {"first_name": self.first_name, "last_name": self.last_name, "pc_year": self.pc_year, "apiKey" : self.apiKey, "id" : self.student_ID}
@@ -34,6 +34,17 @@ class KeyManagement():
             print("---ADDED KEY SUCCESSFULLY---")
         else:
             print("--- ERROR::KEY WAS NOT ADDED::KEY NOT VALID->KeySystem.py")
+
+    def remove_key(self, apiKey):
+        """search key by id and remove the dict entry"""
+        try:
+            for entry in self.json_data:
+                if entry['apiKey'] == apiKey:
+                    self.json_data.remove(entry)
+            print("Removed Key Successfuly...")
+        except Exception as e:
+            print("Did not remove Key successfuly..")
+
       
     # Saves name and ID to class variables. 1 if successful. 0 if not
     def get_student_data(self, apiKey):
@@ -49,12 +60,26 @@ class KeyManagement():
             return 0 
         
 
-    
-    def getKey(self, first_name, last_name):
+    def get_key(self, first_name, last_name):
         """returns studnet key based on given student name"""
         for i in range(len(self.json_data)):
             if (self.json_data[i]['first_name'] == first_name) and (self.json_data[i]['last_name'] == last_name):
                 return self.json_data[i]['key'] 
-        return "0"    
+        return "0"   
+    
+    def get_all_keys(self):
+        """returns a list of all keys"""
+        keys = list()
+        for entry in self.json_data:
+            keys.append(entry['key'])
+        return keys
+    
+    def get_dict(self):
+        """returns the dict we read from file"""
+        return self.json_data
     
 
+if __name__=="__main__":
+    temp = KeyManagement("apiKeys.json")
+    #key = obj.get_key("Zachary", "Stefanich")
+    #obj.remove_key()
