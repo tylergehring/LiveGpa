@@ -4,6 +4,7 @@
 import requests
 import datetime
 
+
 class DotDict(dict):
     """dot.notation access to dictionary attributes"""
     __getattr__ = dict.get
@@ -16,7 +17,7 @@ class Student():
         self.apiKey = apiKey
         self.url = "https://canvas.uidaho.edu/api/v1"
         self.headers = {'Authorization' : 'Bearer ' + self.apiKey}
-        self.errors = list()
+        self.key_errors = list() #format {key: <apiKey>}
 
         self.data = DotDict({
             'first_name' : "None",
@@ -38,7 +39,7 @@ class Student():
                 func_err['get_grades'] =self.get_grades()
                 func_err['calc_gpa'] =self.calc_gpa()
             except Exception as e:
-                self.errors.append({"data_error": {'key' : self.apiKey, 'func_err' : func_err, 'first_name': self.data.first_name, 'last_name': self.data.last_name}})
+                #self.errors.append({'apiKey': self.apiKey, 'first_name': self.data.first_name, 'last_name': self.data.last_name, 'error': {'type': 'func_err', 'data' : func_err}})
                 print("Cannot create student obj...")
     
 
@@ -55,11 +56,11 @@ class Student():
         rec = rec.json()
         rec = DotDict(rec)
 
+        
         try:
-            if 'Expired access token.' in str(rec.errors):
-                    self.errors.append({'expired_apiKey_error': self.apiKey})
-                    print("Expired Token")
-                    return 0
+            if 'error' in rec:
+                self.key_errors.append({'apiKey': self.apiKey})
+                return 0
         except Exception as e:
             self.data.first_name = rec.first_name
             self.data.last_name = rec.last_name
@@ -111,7 +112,8 @@ class Student():
             elif course['grade']['current_grade'] == None:
                 pass
             else:
-                self.errors.append(f"Unknown Grade for {self.data.first_name} {self.data.last_name}, course {course['name']}")
+                pass
+                #self.errors.append({'apiKey': self.apiKey, 'first_name': self.data.first_name, 'last_name': self.data.last_name, 'error': {'type': 'unknown_error', 'data' : course['name']}})
             total_credits += 3
 
         self.data.gpa = (total_score/total_credits)

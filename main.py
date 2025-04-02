@@ -10,7 +10,7 @@ if __name__=="__main__":
     with open(filename, 'r') as openfile:
         name_key_dict = json.load(openfile)
 
-    class_rm = classroom.Classroom(name_key_dict) #make this the dict instead of just keys for catching errors
+    class_rm = classroom.Classroom(name_key_dict) 
     for student in class_rm.students:
         try:
             print(student.data)
@@ -19,4 +19,4 @@ if __name__=="__main__":
     
 
 #TODO:
-#add errors to error cache. make test script exicutable on error cache to get more detail
+#

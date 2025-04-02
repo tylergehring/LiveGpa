@@ -19,7 +19,7 @@ class Classroom:
         for i in range(len(self.name_key_dict)):
             try:
                 obj = student.Student(self.name_key_dict[i]['key'])
-                self.errors.append(obj.errors) 
+                self.errors.append(obj.key_errors) 
 
                 self.students.append({'name': self.name_key_dict[i]['name'], 
                                       'pc_year': self.name_key_dict[i]['pc_year'],
